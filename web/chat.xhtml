@@ -1,0 +1,174 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui">
+    <h:head>
+        <title>Chat WebSocket</title>
+        <link href="#{request.contextPath}/resources/css/bootstrap.min.css" rel="stylesheet" type="text/css" />
+        <!-- Font Awesome Icons -->
+        <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css" rel="stylesheet" type="text/css" />
+        <!-- Ionicons -->
+        <!--<link href="https://code.ionicframework.com/ionicons/2.0.1/css/ionicons.min.css" rel="stylesheet" type="text/css" />-->
+
+        <link href="#{request.contextPath}/resources/css/AdminLTE.min.css" rel="stylesheet" type="text/css" />
+        <link href="#{request.contextPath}/resources/css/layout.css" rel="stylesheet" type="text/css" />
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+        <script type="text/javascript">
+            var websocket = new WebSocket ("ws://192.168.0.34:8084/WebSocketExample/WebSocketExample");
+            var username = "";
+            // Método que recebe as mensagens do servidor
+            websocket.onmessage = function processMessage(message) {
+                var jsonData = JSON.parse(message.data);
+                debugger;
+                if (jsonData.message !== undefined) {
+                    addAnother(jsonData.message, jsonData.username === username);
+                    var objDiv = document.getElementById("chatScrollable");
+                    objDiv.scrollTop = objDiv.scrollHeight;
+                }
+                if (jsonData.username_connected !== undefined){
+                    addAnother("Conectado como: " + jsonData.username_connected);
+                    username = jsonData.username_connected;
+                }
+                if (jsonData.username_disconnected !== undefined){
+                    removeUser(jsonData.username_disconnected);
+                }
+
+                if (jsonData.otherUser !== undefined){
+                    addUser(jsonData.otherUser);
+                }
+            };
+            function sendMessage() {
+                if (messageText.value.length > 0)
+                    websocket.send(messageText.value);
+//                addAnother(messageText.value);
+                messageText.value = "";
+            }
+            // Adiciona sessão do usuário em lista de conectados
+            function logar() {
+                waitForSocketConnection(websocket, function(){
+                    websocket.send("#{chatMBeans.usuario}");
+                });
+            }
+            //Adiciona mensagem
+            function addAnother(text, thisUser) {
+                var ul = document.getElementById("chatList");
+                var li = document.createElement("li");
+                var children = ul.children.length + 1;
+                li.setAttribute("id", "element"+children);
+                if (thisUser){
+                    li.setAttribute("class","list-group-item list-group-item-success");
+                }else{
+                    li.setAttribute("class","list-group-item");
+                }
+                var span = document.createElement("span");
+                span.setAttribute("style","color:black;");
+                span.appendChild(document.createTextNode(text));
+                li.appendChild(span);
+                ul.appendChild(li);
+            }
+            // Adiciona usuário em conectados
+            function addUser(user){
+                var ul = document.getElementById("usuariosConectados");
+                var li = document.createElement("li");
+                li.setAttribute("id",user);
+                var a = document.createElement("a");
+                a.setAttribute("href","#");
+                li.appendChild(a);
+                a.appendChild(document.createTextNode(user));
+                ul.appendChild(li);
+            }
+            // Remove usuário de conectados
+            function removeUser(user){
+                var li = document.getElementById(user);
+                li.parentNode.removeChild(li);
+            }
+            
+            // Timeout de conexão
+            function waitForSocketConnection(socket, callback){
+                setTimeout(
+                    function () {
+                        if (socket.readyState === 1) {
+                            if(callback !== null){
+                                callback();
+                            }
+                            return;
+
+                        } else {
+                            waitForSocketConnection(socket, callback);
+                        }
+
+                    }, 5);
+            }
+        </script>
+
+    </h:head>
+    <h:body onload="logar()">
+        <h:panelGroup id="wrapper">
+            <!-- Main Header -->
+            <header class="main-header">
+
+                <!-- Logo -->
+                <a href="#" class="logo">
+                    <span class="logo-lg"><b>WebSocket Chat</b></span>
+                </a>
+
+                <!-- Header Navbar -->
+                <nav class="navbar navbar-static-top" role="navigation">
+                    <!-- Navbar Right Menu -->
+                    <h:form id="frmNotificacao" prependId="false">
+                        <div class="navbar-custom-menu">
+                            <ul class="nav navbar-nav">
+                                <!-- User Account Menu -->
+                                <li class="dropdown user user-menu">
+                                    <!-- Menu Toggle Button -->
+                                    <a href="#" class="dropdown-toggle" data-toggle="dropdown">
+                                        <!-- hidden-xs hides the username on small devices so only the image appears. -->
+                                        <span class="" id="userName">#{chatMBeans.usuario}</span>
+                                    </a>
+                                    
+                                </li>
+                                <!-- Control Sidebar Toggle Button -->
+                                <li>
+                                    <h:commandLink action="#{chatMBeans.sair}"><i class="fa fa-sign-out"></i></h:commandLink>
+                                </li>
+                            </ul>
+                        </div>
+                    </h:form>
+                </nav>
+            </header>     
+            <!--<div id="display-success"></div>-->
+            <div class="container">
+                <div class="row">
+                    <div class="col-lg-9 col-sm-9 col-xm-9">
+                        <div id="chatScrollable" class="media conversation" style="overflow-y: scroll; height: 500px;">
+                            <div id="chatArea" >
+                                <ul id="chatList" class="list-group">
+
+                                </ul>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-lg-7">
+                                <input type="text" class="form-control" id="messageText" size="50" onkeydown="if(event.keyCode === 13)sendMessage()" /> 
+                            </div>
+                            <div class="col-md-4">
+                                <input type="button" class="btn btn-success" value="Enviar" onclick="sendMessage()"/>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-lg-3 col-md-3 col-sm-3">
+                      <ul class="nav nav-pills nav-stacked" id="usuariosConectados">
+                        <li class="active"><a href="#">Usuários conectados</a></li>                        
+                      </ul>
+                        
+                    </div>
+                </div>
+            </div>
+        </h:panelGroup>
+        <p:growl autoUpdate="true"/> 
+    </h:body>
+</html>
+

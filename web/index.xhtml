@@ -1,0 +1,58 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"> 
+    <h:head>
+        <title>Chat websocket</title>
+        <link href="#{request.contextPath}/resources/css/bootstrap.min.css" rel="stylesheet" type="text/css" />
+        <!-- Font Awesome Icons -->
+        <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css" rel="stylesheet" type="text/css" />
+        <!-- Ionicons -->
+        <!--<link href="https://code.ionicframework.com/ionicons/2.0.1/css/ionicons.min.css" rel="stylesheet" type="text/css" />-->
+
+        <link href="#{request.contextPath}/resources/css/AdminLTE.min.css" rel="stylesheet" type="text/css" />
+        <link href="#{request.contextPath}/resources/css/layout.css" rel="stylesheet" type="text/css" />
+        
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+
+    </h:head>
+    <h:body>
+        <h:panelGroup id="wrapper">
+            <!-- Main Header -->
+            <header class="main-header">
+
+                <!-- Logo -->
+                <a href="#" class="logo">
+                    <span class="logo-lg"><b>Websocket</b></span>
+                </a>
+
+                <!-- Header Navbar -->
+                <nav class="navbar navbar-static-top" role="navigation">
+                </nav>
+            </header>     
+            <!--<div id="display-success"></div>-->
+            <h:form>
+                <br/>
+                <div class="container" id="login" >
+                    <div class="row">
+                        <div class="col-lg-3 col-sm-3 col-xs-12">
+                            <div class="form-group">
+                                <label>Apelido:</label>
+                                <h:inputText class="form-control" id="messageText" value="#{indexMBean.usuario}"
+                                             size="20" required="true" 
+                                             requiredMessage="Escolha um apelido"
+                                             validator="ValidadorUsuario"/> 
+                            </div>
+                        </div>
+                        <div class="col-sm-4" style="top:25px; ">
+                            <h:commandButton class="btn btn-success" value="Acessar" action="#{indexMBean.logar}"/>
+                        </div>
+                    </div>
+                </div>
+            </h:form>
+        </h:panelGroup>
+        <p:growl autoUpdate="true"/> 
+    </h:body>
+</html>
+
